@@ -5,3 +5,46 @@ body {
 h2 {
     margin-bottom: 20px;
 }
+
+h7 {
+    font-weight: bold;
+}
+
+.container {
+    display: grid;
+    grid-template-areas: 'text text text image';
+    grid-template-columns: auto auto auto 25%;
+    row-gap: 1px; 
+    width: 100%;
+    border: 1px solid;
+    border-color: rgb(197, 197, 197);
+    margin-left: auto;
+    margin-right: auto;
+    justify-items: left;
+}
+
+.container > div {
+    background-color: white;
+    padding: 20px;
+}
+
+.text { 
+    grid-area: text; 
+    position: relative;
+    left: auto;
+    grid-column-start: 0;
+    grid-column-end: 3;
+}
+
+.image { 
+    grid-area: image; 
+    grid-column-start: 4;
+}    
+
+ul {
+    list-style: none;
+}
+
+hr {
+    border-color: grey;
+}

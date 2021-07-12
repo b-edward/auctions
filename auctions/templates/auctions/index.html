@@ -5,7 +5,19 @@
 
     <ul>
         {% for listing in listings %}
-            <li>{{ listing }}</li>
+        <div class="container">
+            <div class="text">
+                <h5>{{ listing.list_title }}</h5>
+                <li>            
+                    <h6>Posted by: {{ listing.poster_id }}</h6> 
+                    <h7>Current price: {{ listing.starting_bid }}</h7> <br><br>
+                    {{ listing.description }}                                               
+                </li>
+            </div>
+            <div class="image">
+                <img src="{{ listing.image_url }}" alt="(No picture)" width="200" height="125"> 
+            </div>
+        </div>
         {% endfor %}
     </ul>
 
