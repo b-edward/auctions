@@ -7,7 +7,7 @@
         {% for listing in listings %}
         <div class="container">
             <div class="text">
-                <h5>{{ listing.list_title }}</h5>
+                <a href="{% url 'listing' listing.list_title %}"><h5>{{ listing.list_title }}</h5></a>
                 <li>            
                     <h6>Posted by: {{ listing.poster_id }}</h6> 
                     <h7>Current price: {{ listing.starting_bid }}</h7> <br><br>

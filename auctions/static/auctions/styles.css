@@ -10,6 +10,24 @@ h7 {
     font-weight: bold;
 }
 
+.listing_container {
+    display: grid;
+    grid-template-areas: 'text text image image';
+    grid-template-columns: auto auto auto auto;
+    row-gap: 1px; 
+    width: 100%;
+    border: 1px solid;
+    margin-left: auto;
+    margin-right: auto;
+    justify-items: left;
+    border-color: rgb(255, 255, 255);
+}
+
+.listing_container > div {
+    background-color: white;
+    padding: 20px;
+}
+
 .container {
     display: grid;
     grid-template-areas: 'text text text image';
