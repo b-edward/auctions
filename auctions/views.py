@@ -1,16 +1,18 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import AnonymousUser
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django import forms
 from .models import *
+from django.contrib.auth.decorators import login_required
 
 
 # form for creating a new listing
 class NewListingForm(forms.Form):
     list_title = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label = "Listing Title", max_length=100)
-    description = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label = "Description", max_length=500)
+    description = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label = "Description", max_length=1000)
     starting_bid = forms.DecimalField(widget=forms.TextInput(attrs={'size':100}), label = "Starting Bid", max_digits=10, decimal_places=2)
     category_id = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label="Category (optional)", max_length=100, required=False)
     image_url = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label="Image URL (optional)", max_length=300, required=False)
@@ -73,7 +75,6 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
-
 def create_new(request):
     if request.method == "POST":
         # Validate submitted listing
@@ -98,9 +99,94 @@ def create_new(request):
             "form": NewListingForm()
         })
 
+# Call up the listing for this title
 def listing(request, title):
+    in_list = False     # Default to indicate title not in users watchlist
 
+    # Get the listing
     listing = Listing.objects.get(list_title=title)
+
+    # Check that listing exists
+    if listing:  
+        # Check if user is logged in or not   
+        if request.user.is_anonymous:
+            pass
+        else:
+            logged_user = request.user      # Get user id
+            watchlist = Watchlist.objects.filter(user_id=logged_user)   # Get users watchlist
+            
+            # Check user has a watchlist
+            if watchlist:
+                # Check if title is in the watchlist
+                if watchlist.filter(listing_id=listing.id):
+                    in_list = "True"    # Indicate title is in users watchlist
+                else:
+                    pass    
+
+    # Do nothing if listing doesn't exist
+    else:    
+        pass    
+        
+    # Send listing and title status
     return render(request, "auctions/listing.html", {
-        "listing": listing
+        "listing": listing, "in_list": in_list
     })
+
+# if user logged in, try to add the listing to their watchlist
+@login_required
+def watchlist(request, title):     
+    listing = Listing.objects.get(list_title=title)             # Get the listing
+    logged_user = request.user                                  # Get the user's id
+    users_list = Watchlist.objects.filter(user_id=logged_user)  # Get the users watchlist
+    
+    # Check if the user has this title in the watchlist
+    if users_list.filter(listing_id=listing.id):
+        message = "That listing is already in your watchlist"    # Let user know its already there
+        in_list = "True"
+
+        # Send back to listing page with message
+        return render(request, "auctions/listing.html", {
+        "listing": listing, "in_list": in_list, "message": message
+        })
+
+    # Add listing to the watchlist
+    else:
+        watch = Watchlist(
+            user_id = logged_user,
+            listing_id = listing
+        )
+        watch.save()       
+    
+    # Send the users watchlist to the template
+    return render(request, "auctions/watchlist.html", {
+        "users_list": users_list    
+    })
+
+
+# if user logged in, try to remove the listing from their watchlist
+@login_required
+def remove_watch(request, title):     
+    listing = Listing.objects.get(list_title=title)             # Get the listing
+    logged_user = request.user                                  # Get the user's id
+    to_remove = Watchlist.objects.filter(user_id=logged_user, listing_id=listing)  # Get the listing from users watchlist
+    
+    # Remove listing from the watchlist
+    to_remove.delete()  
+
+    # Advise listing removed
+    message = "The listing has been removed from your watchlist"     
+    in_list = "False"   
+    
+    users_list = Watchlist.objects.filter(user_id=logged_user)  # Get the users updated watchlist
+
+    # Send the users watchlist to the template
+    return render(request, "auctions/watchlist.html", {
+        "users_list": users_list, "message": message
+    })
+
+'''
+    # Send back to listing page with message
+    return render(request, "auctions/listing.html", {
+    "listing": listing, "in_list": in_list, 
+    })
+'''
