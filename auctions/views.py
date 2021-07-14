@@ -170,12 +170,12 @@ def watchlist(request, title):
     
     # Check if the user has this title in the watchlist
     if users_list.filter(listing_id=listing.id):
-        message = "Listing is already in your watchlist"    # Let user know its already there
+        message = " is already in your watchlist"    # Let user know its already there
         in_list = "True"
 
         # Send back to listing page with message
         return render(request, "auctions/listing.html", {
-        "listing": listing, "in_list": in_list, "message": message
+        "listing": listing, "in_list": in_list, "message": message, "title": title
         })
 
     # Add listing to the watchlist
@@ -184,11 +184,12 @@ def watchlist(request, title):
             user_id = logged_user,
             listing_id = listing
         )
-        watch.save()       
+        watch.save()     
+        message = " has been added to your watchlist"    # Let user know its been added
     
     # Send the users watchlist to the template
     return render(request, "auctions/watchlist.html", {
-        "users_list": users_list    
+        "users_list": users_list, "message": message, "title": title    
     })
 
 
@@ -203,18 +204,19 @@ def remove_watch(request, title):
     to_remove.delete()  
 
     # Advise listing removed
-    message = "The listing has been removed from your watchlist"     
+    message = " has been removed from your watchlist"     
     in_list = "False"   
     
     users_list = Watchlist.objects.filter(user_id=logged_user)  # Get the users updated watchlist
 
     # Send the users watchlist to the template
     return render(request, "auctions/watchlist.html", {
-        "users_list": users_list, "message": message
+        "users_list": users_list, "message": message, "title": title
     })
 
 
 # Bid on an item
+'''
 @login_required
 def remove_watch(request, title):     
     listing = Listing.objects.get(list_title=title)             # Get the listing
@@ -234,3 +236,4 @@ def remove_watch(request, title):
     return render(request, "auctions/watchlist.html", {
         "users_list": users_list, "message": message
     })
+'''
