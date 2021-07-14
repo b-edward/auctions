@@ -115,13 +115,12 @@ def create_new(request):
 
 # Call up the listing for this title
 def listing(request, title):
-    in_list = False     # Default to indicate title not in users watchlist
-
-    # Get the listing
-    listing = Listing.objects.get(list_title=title)
-
-    # Check that listing exists
-    if listing:  
+    in_list = False     # Default to indicate title not in users watchlist 
+    
+    # Try to get the listing
+    try:
+        listing = Listing.objects.get(list_title=title)
+        
         # Check if user is logged in or not   
         if request.user.is_anonymous:
             pass
@@ -135,35 +134,43 @@ def listing(request, title):
                 if watchlist.filter(listing_id=listing.id):
                     in_list = "True"    # Indicate title is in users watchlist
                 else:
-                    pass    
+                    pass  
+
+        # Get the bids for this title
+        bids = Bid.objects.filter(listing_id=listing.id)
+        highest_bid = listing.starting_bid
+
+        # Check there are bids
+        if bids:
+            # Determine the highest bid
+            # highest_bid = util.high_bid(   )
+            pass
+        else:
+            pass
+
+        
+        # Create a new bid form
+        # new_bid = 
+        #
+
+        # Send listing, title status, bid form and highest bid
+        return render(request, "auctions/listing.html", {
+            "listing": listing, 
+            "in_list": in_list,  
+            "highest_bid": highest_bid
+            #"form": new_bid
+        })
 
     # Do nothing if listing doesn't exist
-    else:    
-        pass    
+    except Listing.DoesNotExist:
+        return HttpResponseRedirect(reverse("create"))
 
 
-    # Get the bids for this title
-    # bids = 
-    #
-    # Determine the highest bid
-    # highest_bid = util.high_bid(   )
-    #
-    # Create a new bid form
-    # new_bid = 
-    #
-
-    # Send listing, title status, bid form and highest bid
-    return render(request, "auctions/listing.html", {
-        "listing": listing, 
-        "in_list": in_list,  
-        #"highest_bid": highest_bid
-        #"form": new_bid
-    })
 
 
 # if user logged in, try to add the listing to their watchlist
 @login_required
-def watchlist(request, title):     
+def watchlist_add(request, title):     
     listing = Listing.objects.get(list_title=title)             # Get the listing
     logged_user = request.user                                  # Get the user's id
     users_list = Watchlist.objects.filter(user_id=logged_user)  # Get the users watchlist
@@ -195,7 +202,7 @@ def watchlist(request, title):
 
 # If user logged in, try to remove the listing from their watchlist
 @login_required
-def remove_watch(request, title):     
+def watchlist_remove(request, title):     
     listing = Listing.objects.get(list_title=title)             # Get the listing
     logged_user = request.user                                  # Get the user's id
     to_remove = Watchlist.objects.filter(user_id=logged_user, listing_id=listing)  # Get the listing from users watchlist
@@ -213,6 +220,31 @@ def remove_watch(request, title):
     return render(request, "auctions/watchlist.html", {
         "users_list": users_list, "message": message, "title": title
     })
+
+
+# View users watchlist
+@login_required
+def watchlist_view(request):     
+    logged_user = request.user      # Get the user's id 
+
+    try:
+        users_list = Watchlist.objects.filter(user_id=logged_user)  # Get the users watchlist
+
+    except Watchlist.DoesNotExist:
+        users_list = None
+
+
+    if users_list is None:
+        message = "List is empty"
+        return render(request, "auctions/watchlist.html", {
+            "message": message
+        })
+    else:
+        # Send the users watchlist to the template
+        return render(request, "auctions/watchlist.html", {
+            "users_list": users_list
+        })
+
 
 
 # Bid on an item
