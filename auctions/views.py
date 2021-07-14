@@ -20,9 +20,7 @@ class NewListingForm(forms.Form):
 
 # Form for bidding on an auction
 class NewBidForm(forms.Form):
-    listing_id = forms.CharField(widget=forms.TextInput(attrs={'size':10}), label = "Listing Title", max_length=1000)
-    bidder_id = forms.CharField(widget=forms.TextInput(attrs={'size':10}), label = "Bidder Name", max_length=1000) 
-    bid_amount = forms.DecimalField(widget=forms.TextInput(attrs={'size':100}), label = "Starting Bid", max_digits=10, decimal_places=2)
+    bid_amount = forms.DecimalField(widget=forms.TextInput(attrs={'size':20}), label = "Enter your bid   ", max_digits=10, decimal_places=2)
 
 
 # Main listing page
@@ -99,6 +97,7 @@ def create_new(request):
                 list_title = new_input.cleaned_data["list_title"],
                 description = new_input.cleaned_data["description"],
                 starting_bid = new_input.cleaned_data["starting_bid"],
+                highest_bid = 0,
                 category_id = new_input.cleaned_data["category_id"],
                 image_url = new_input.cleaned_data["image_url"],
                 )
@@ -138,27 +137,24 @@ def listing(request, title):
 
         # Get the bids for this title
         bids = Bid.objects.filter(listing_id=listing.id)
-        highest_bid = listing.starting_bid
 
         # Check there are bids
         if bids:
             # Determine the highest bid
-            # highest_bid = util.high_bid(   )
-            pass
+            highest_bid = util.high_bid(bids, listing.starting_bid)
         else:
-            pass
+            highest_bid = listing.starting_bid
 
-        
         # Create a new bid form
-        # new_bid = 
-        #
+        new_bid = NewBidForm()
+        
 
         # Send listing, title status, bid form and highest bid
         return render(request, "auctions/listing.html", {
             "listing": listing, 
             "in_list": in_list,  
-            "highest_bid": highest_bid
-            #"form": new_bid
+            "highest_bid": highest_bid,
+            "form": new_bid
         })
 
     # Do nothing if listing doesn't exist
@@ -228,13 +224,11 @@ def watchlist_view(request):
     logged_user = request.user      # Get the user's id 
 
     try:
-        users_list = Watchlist.objects.filter(user_id=logged_user)  # Get the users watchlist
-
+        users_titles = Watchlist.objects.filter(user_id=logged_user)  # Get the users watchlist
     except Watchlist.DoesNotExist:
-        users_list = None
+        users_titles = None
 
-
-    if users_list is None:
+    if users_titles is None:
         message = "List is empty"
         return render(request, "auctions/watchlist.html", {
             "message": message
@@ -242,7 +236,7 @@ def watchlist_view(request):
     else:
         # Send the users watchlist to the template
         return render(request, "auctions/watchlist.html", {
-            "users_list": users_list
+            "users_list": users_titles
         })
 
 

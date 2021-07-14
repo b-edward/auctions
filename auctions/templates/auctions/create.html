@@ -13,14 +13,14 @@
         
         {% for field in form %}
             <div class="row">
-            <div class="col-md-2">    
-                {{ field.label_tag }}
-            </div><div class="col-md-8 pull-left">
-                {{ field }}
-            </div>
+                <div class="col-md-2">    
+                    {{ field.label_tag }}
+                </div>
+                <div class="col-md-8 pull-left">
+                    {{ field }}
+                </div>
             </div>
         {% endfor %}
-        
         <button type="submit" id="new_listing">Save new listing</button>
     </form>
 
