@@ -22,7 +22,7 @@ class Bid(models.Model):
     bid_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f"{self.bidder_id} has bid ${self.bid_amount} on {self.listing_id}."
+        return f"${self.bid_amount}"
 
 class Comment(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="commenter")
