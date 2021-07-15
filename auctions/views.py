@@ -22,13 +22,19 @@ class NewListingForm(forms.Form):
 class NewBidForm(forms.Form):
     bid_amount = forms.DecimalField(widget=forms.TextInput(attrs={'size':20}), label = "Enter your bid   ", max_digits=10, decimal_places=2)
 
+# Form for adding a comment
+class NewCommentForm(forms.Form):
+    comment = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label = "Add a comment", max_length=500)
+
+
 
 # Main active listing page
 def index(request):
     active_listings = Listing.objects.filter(active=True)
+    bids = Bid.objects.all()
 
     return render(request, "auctions/index.html", {
-        "listings": active_listings
+        "listings": active_listings, "bids": bids
     })
 
 # Closed listings page
@@ -108,7 +114,7 @@ def create_new(request):
                 description = new_input.cleaned_data["description"],
                 starting_bid = new_input.cleaned_data["starting_bid"],
                 highest_bid = new_input.cleaned_data["starting_bid"],
-                bidder_id = request.user,
+                high_bidder = request.user,
                 category_id = new_input.cleaned_data["category_id"],
                 image_url = new_input.cleaned_data["image_url"],
                 active = True
@@ -126,8 +132,8 @@ def create_new(request):
 
 # Call up the listing for this title
 def listing(request, title):
-    in_list = False     # Default to indicate title not in users watchlist 
-    
+    in_list = False     # Default to indicate title not in users watchlist     
+
     # Try to get the listing
     try:
         listing = Listing.objects.get(list_title=title)
@@ -151,14 +157,21 @@ def listing(request, title):
         highest_bid = listing.highest_bid
     
         # Create a new bid form
-        bid_form = NewBidForm()        
+        bid_form = NewBidForm()  
+
+        # Create a new comment form     
+        comment_form = NewCommentForm()
+        
+        comments = Comment.objects.filter(listing_id=listing.id)         # Get the comments
 
         # Send listing, title status, bid form and highest bid
         return render(request, "auctions/listing.html", {
             "listing": listing, 
             "in_list": in_list,  
             "highest_bid": highest_bid,
-            "form": bid_form,
+            "bid_form": bid_form,
+            "comments": comments,
+            "comment_form": comment_form,            
         })        
 
     # Do nothing if listing doesn't exist
@@ -172,15 +185,23 @@ def watchlist_add(request, title):
     listing = Listing.objects.get(list_title=title)             # Get the listing
     logged_user = request.user                                  # Get the user's id
     users_list = Watchlist.objects.filter(user_id=logged_user)  # Get the users watchlist
+    comments = Comment.objects.filter(listing_id=listing.id)         # Get the comments   
+    comment_form = NewCommentForm()     # Create a new comment form     
     
     # Check if the user has this title in the watchlist
     if users_list.filter(listing_id=listing.id):
         message = str(title) + " is already in your watchlist"    # Let user know its already there
         in_list = "True"
 
+
         # Send back to listing page with message
         return render(request, "auctions/listing.html", {
-        "listing": listing, "in_list": in_list, "message": message, "title": title
+            "listing": listing, 
+            "in_list": in_list, 
+            "message": message, 
+            "title": title,
+            "comments": comments,
+            "comment_form": comment_form
         })
 
     # Add listing to the watchlist
@@ -261,9 +282,17 @@ def bid(request, title):
         new_bid = new_input.cleaned_data["bid_amount"]
 
         if new_bid > listing.highest_bid:
+            # Add the bid to the bid db
+            bid = Bid(
+                listing_id = listing,
+                bidder_id = logged_user,
+                bid_amount = new_bid
+                )
+            bid.save() 
+
             # Update the listing's highest_bid and bidder
             listing.highest_bid = new_input.cleaned_data["bid_amount"]
-            listing.bidder_id = logged_user
+            listing.high_bidder = logged_user
             listing.save()
 
             message = "Your bid has been accepted"
@@ -273,34 +302,77 @@ def bid(request, title):
     # Create a new bid form
     bid_form = NewBidForm()   
 
+    # Create a new comment form     
+    comment_form = NewCommentForm()
+
     # Check if the user has this title in the watchlist
     if users_list.filter(listing_id=listing.id):
         in_list = "True"
+
+    comments = Comment.objects.filter(listing_id=listing.id)
 
     # Go back to listing 
     return render(request, "auctions/listing.html", {
         "listing": listing, 
         "in_list": in_list,  
         "message": message,
-        "form": bid_form,
+        "bid_form": bid_form,
+        "comments": comments,
+        "comment_form": comment_form
     })
 
 
 # Close an auction listing
+@login_required
 def close(request, title):
     logged_user = request.user      # Get the user's id 
-    listing = Listing.objects.get(list_title=title)         # Get the listing
-    message = "test close"
+    listing = Listing.objects.get(list_title=title)         # Get the listing            
+    comment_form = NewCommentForm()          # Create a new comment form
+
 
     if logged_user == listing.poster_id:
         # Close the auction
         listing.active = False
         listing.save()
 
-        message = "This auction has been closed. " + str(listing.bidder_id) + " won the auction."
+        message = "This auction has been closed. " + str(listing.high_bidder) + " won the auction."
+
+    comments = Comment.objects.filter(listing_id=listing.id)
 
     # Go back to listing 
     return render(request, "auctions/listing.html", {
         "listing": listing, 
         "message": message,
+        "comments": comments,
+        "comment_form": comment_form
+    })
+
+# Add a comment
+@login_required
+def comment(request, title):
+    logged_user = request.user      # Get the user's id 
+    listing = Listing.objects.get(list_title=title)         # Get the listing
+    comment_form = NewCommentForm()          # Create a new comment form
+
+    if request.method == "POST":        
+        new_input = NewCommentForm(request.POST)
+
+        if new_input.is_valid():   
+            comment = new_input.cleaned_data["comment"]
+            
+            # Add the comment to the comment db
+            new_comment = Comment(
+                user_id = logged_user,
+                listing_id = listing,
+                comment = comment
+                )
+            new_comment.save() 
+
+    comments = Comment.objects.filter(listing_id=listing.id)
+
+    # Go back to listing 
+    return render(request, "auctions/listing.html", {
+        "listing": listing, 
+        "comments": comments,
+        "comment_form": comment_form
     })
