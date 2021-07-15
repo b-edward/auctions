@@ -97,9 +97,9 @@ def create_new(request):
                 list_title = new_input.cleaned_data["list_title"],
                 description = new_input.cleaned_data["description"],
                 starting_bid = new_input.cleaned_data["starting_bid"],
-                highest_bid = 0,
+                highest_bid = new_input.cleaned_data["starting_bid"],
                 category_id = new_input.cleaned_data["category_id"],
-                image_url = new_input.cleaned_data["image_url"],
+                image_url = new_input.cleaned_data["image_url"]
                 )
             new_listing.save()
 
@@ -135,33 +135,23 @@ def listing(request, title):
                 else:
                     pass  
 
-        # Get the bids for this title
-        bids = Bid.objects.filter(listing_id=listing.id)
-
-        # Check there are bids
-        if bids:
-            # Determine the highest bid
-            highest_bid = util.high_bid(bids, listing.starting_bid)
-        else:
-            highest_bid = listing.starting_bid
-
+        # Get the highest bid
+        highest_bid = listing.highest_bid
+    
         # Create a new bid form
-        new_bid = NewBidForm()
-        
+        bid_form = NewBidForm()        
 
         # Send listing, title status, bid form and highest bid
         return render(request, "auctions/listing.html", {
             "listing": listing, 
             "in_list": in_list,  
             "highest_bid": highest_bid,
-            "form": new_bid
-        })
+            "form": bid_form,
+        })        
 
     # Do nothing if listing doesn't exist
     except Listing.DoesNotExist:
-        return HttpResponseRedirect(reverse("create"))
-
-
+        return HttpResponseRedirect(reverse("index"))
 
 
 # if user logged in, try to add the listing to their watchlist
@@ -173,7 +163,7 @@ def watchlist_add(request, title):
     
     # Check if the user has this title in the watchlist
     if users_list.filter(listing_id=listing.id):
-        message = " is already in your watchlist"    # Let user know its already there
+        message = str(title) + " is already in your watchlist"    # Let user know its already there
         in_list = "True"
 
         # Send back to listing page with message
@@ -188,7 +178,7 @@ def watchlist_add(request, title):
             listing_id = listing
         )
         watch.save()     
-        message = " has been added to your watchlist"    # Let user know its been added
+        message = str(title) + " has been added to your watchlist"    # Let user know its been added
     
     # Send the users watchlist to the template
     return render(request, "auctions/watchlist.html", {
@@ -207,7 +197,7 @@ def watchlist_remove(request, title):
     to_remove.delete()  
 
     # Advise listing removed
-    message = " has been removed from your watchlist"     
+    message = str(title) + " has been removed from your watchlist"     
     in_list = "False"   
     
     users_list = Watchlist.objects.filter(user_id=logged_user)  # Get the users updated watchlist
@@ -242,24 +232,47 @@ def watchlist_view(request):
 
 
 # Bid on an item
-'''
 @login_required
-def remove_watch(request, title):     
-    listing = Listing.objects.get(list_title=title)             # Get the listing
-    logged_user = request.user                                  # Get the user's id
-    to_remove = Watchlist.objects.filter(user_id=logged_user, listing_id=listing)  # Get the listing from users watchlist
-    
-    # Remove listing from the watchlist
-    to_remove.delete()  
+def bid(request, title):
+    logged_user = request.user      # Get the user's id 
+    listing = Listing.objects.get(list_title=title)         # Get the listing
+    users_list = Watchlist.objects.filter(user_id=logged_user)  # Get the users watchlist
+    in_list = "False"
+    highest_bid = listing.highest_bid   # Get the current highest bid
+    message = None
 
-    # Advise listing removed
-    message = "The listing has been removed from your watchlist"     
-    in_list = "False"   
-    
-    users_list = Watchlist.objects.filter(user_id=logged_user)  # Get the users updated watchlist
+    # Validate submitted bid
+    if request.method == "POST":        
+        new_input = NewBidForm(request.POST)
 
-    # Send the users watchlist to the template
-    return render(request, "auctions/watchlist.html", {
-        "users_list": users_list, "message": message
+    if new_input.is_valid():    
+        # Check the bid is higher than current highest bid
+        new_bid = new_input.cleaned_data["bid_amount"]
+
+        if new_bid > highest_bid:
+            # Update the listing's highest_bid
+            listing.highest_bid = new_input.cleaned_data["bid_amount"]
+            listing.save()
+            # Update the current highest bid
+            highest_bid = listing.highest_bid
+
+            message = "Your bid has been accepted"
+        else:
+            message = "New bid must be higher than the current price"
+  
+    # Create a new bid form
+    bid_form = NewBidForm()   
+
+    # Check if the user has this title in the watchlist
+    if users_list.filter(listing_id=listing.id):
+        in_list = "True"
+
+    # Go back to listing 
+    return render(request, "auctions/listing.html", {
+        "listing": listing, 
+        "in_list": in_list,  
+        "highest_bid": highest_bid,
+        "title": title,
+        "message": message,
+        "form": bid_form
     })
-'''
