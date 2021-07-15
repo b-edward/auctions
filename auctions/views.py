@@ -9,13 +9,23 @@ from .models import *
 from . import util
 from django.contrib.auth.decorators import login_required
 
+CATEGORIES= [
+    ('orange', 'Oranges'),
+    ('cantaloupe', 'Cantaloupes'),
+    ('mango', 'Mangoes'),
+    ('honeydew', 'Honeydews'),
+    ]
 
 # Form for creating a new listing
 class NewListingForm(forms.Form):
     list_title = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label = "Listing Title", max_length=100)
     description = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label = "Description", max_length=1000)
     starting_bid = forms.DecimalField(widget=forms.TextInput(attrs={'size':100}), label = "Starting Bid", max_digits=10, decimal_places=2)
-    category_id = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label="Category (optional)", max_length=100, required=False)
+    category_id = forms.MultipleChoiceField(
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        choices=CATEGORIES,
+    )
     image_url = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label="Image URL (optional)", max_length=300, required=False)
 
 # Form for bidding on an auction
@@ -291,8 +301,8 @@ def bid(request, title):
             bid.save() 
 
             # Update the listing's highest_bid and bidder
-            listing.highest_bid = new_input.cleaned_data["bid_amount"]
-            listing.high_bidder = logged_user
+            listing.highest_bid = bid.bid_amount
+            listing.high_bidder = bid.bidder_id
             listing.save()
 
             message = "Your bid has been accepted"

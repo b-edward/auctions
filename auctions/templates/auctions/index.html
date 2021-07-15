@@ -16,7 +16,7 @@
                 <a href="{% url 'listing' listing.list_title %}"><h5>{{ listing.list_title }}</h5></a>
                 <li>            
                     <h6>Posted by: {{ listing.poster_id }}</h6> 
-                    <h7>Current price: {{ listing.highest_bid }}</h7> <br><br>
+                    <h7>Current price: ${{ listing.highest_bid }}</h7> <br><br>
                     {{ listing.description }}                                               
                 </li>
             </div>
