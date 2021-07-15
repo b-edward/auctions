@@ -23,10 +23,20 @@ class NewBidForm(forms.Form):
     bid_amount = forms.DecimalField(widget=forms.TextInput(attrs={'size':20}), label = "Enter your bid   ", max_digits=10, decimal_places=2)
 
 
-# Main listing page
+# Main active listing page
 def index(request):
+    active_listings = Listing.objects.filter(active=True)
+
     return render(request, "auctions/index.html", {
-        "listings": Listing.objects.all()
+        "listings": active_listings
+    })
+
+# Closed listings page
+def closed(request):
+    closed_listings = Listing.objects.filter(active=False)
+
+    return render(request, "auctions/closed.html", {
+        "listings": closed_listings
     })
 
 
@@ -98,8 +108,10 @@ def create_new(request):
                 description = new_input.cleaned_data["description"],
                 starting_bid = new_input.cleaned_data["starting_bid"],
                 highest_bid = new_input.cleaned_data["starting_bid"],
+                bidder_id = request.user,
                 category_id = new_input.cleaned_data["category_id"],
-                image_url = new_input.cleaned_data["image_url"]
+                image_url = new_input.cleaned_data["image_url"],
+                active = True
                 )
             new_listing.save()
 
@@ -238,7 +250,6 @@ def bid(request, title):
     listing = Listing.objects.get(list_title=title)         # Get the listing
     users_list = Watchlist.objects.filter(user_id=logged_user)  # Get the users watchlist
     in_list = "False"
-    highest_bid = listing.highest_bid   # Get the current highest bid
     message = None
 
     # Validate submitted bid
@@ -249,12 +260,11 @@ def bid(request, title):
         # Check the bid is higher than current highest bid
         new_bid = new_input.cleaned_data["bid_amount"]
 
-        if new_bid > highest_bid:
-            # Update the listing's highest_bid
+        if new_bid > listing.highest_bid:
+            # Update the listing's highest_bid and bidder
             listing.highest_bid = new_input.cleaned_data["bid_amount"]
+            listing.bidder_id = logged_user
             listing.save()
-            # Update the current highest bid
-            highest_bid = listing.highest_bid
 
             message = "Your bid has been accepted"
         else:
@@ -271,8 +281,26 @@ def bid(request, title):
     return render(request, "auctions/listing.html", {
         "listing": listing, 
         "in_list": in_list,  
-        "highest_bid": highest_bid,
-        "title": title,
         "message": message,
-        "form": bid_form
+        "form": bid_form,
+    })
+
+
+# Close an auction listing
+def close(request, title):
+    logged_user = request.user      # Get the user's id 
+    listing = Listing.objects.get(list_title=title)         # Get the listing
+    message = "test close"
+
+    if logged_user == listing.poster_id:
+        # Close the auction
+        listing.active = False
+        listing.save()
+
+        message = "This auction has been closed. " + str(listing.bidder_id) + " won the auction."
+
+    # Go back to listing 
+    return render(request, "auctions/listing.html", {
+        "listing": listing, 
+        "message": message,
     })
