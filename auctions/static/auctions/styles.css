@@ -10,6 +10,8 @@ body {
 h2 {
     margin-bottom: 20px;
     margin-left: 13%;
+    margin-top: 20px;
+    padding-top: 20px
 }
 
 h4 {
@@ -111,4 +113,19 @@ input[type=text] {
 
 .form-group {
     width: 30%;
+}
+
+.bodyblock {
+    background-color: rgb(228, 228, 228);
+    padding-bottom: 20px;
+}
+
+div {
+    background-color: white;
+}
+
+#comments {
+    display: block;
+    margin: 20px;
+    margin-left: 60px;
 }

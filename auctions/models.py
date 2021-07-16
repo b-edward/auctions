@@ -7,19 +7,19 @@ class User(AbstractUser):
 
 class Listing(models.Model):
     CATEGORIES= [
-    ('art', 'Art'),
-    ('business', 'Business'),
-    ('collectibles', 'Collectibles'),
-    ('electronics', 'Electronics'),
-    ('fashion', 'Fashion'), 
-    ('garden', 'Garden'),
-    ('home', 'Home'),
-    ('industrial', 'Industrial'), 
-    ('motors', 'Motors'),
-    ('outdoors', 'Outdoors'),
-    ('sports', 'Sports'),
-    ('toys', 'Toys'), 
-    ('none', 'None')
+    ('Art', 'Art'),
+    ('Business', 'Business'),
+    ('Collectibles', 'Collectibles'),
+    ('Electronics', 'Electronics'),
+    ('Fashion', 'Fashion'), 
+    ('Garden', 'Garden'),
+    ('Home', 'Home'),
+    ('Industrial', 'Industrial'), 
+    ('Motors', 'Motors'),
+    ('Outdoors', 'Outdoors'),
+    ('Sports', 'Sports'),
+    ('Toys', 'Toys'), 
+    ('None', 'None')
     ]
 
     poster_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="poster")

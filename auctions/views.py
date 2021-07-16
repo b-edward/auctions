@@ -10,19 +10,19 @@ from django.contrib.auth.decorators import login_required
 from django.forms import ModelForm
 
 CATEGORIES= [
-    ('art', 'Art'),
-    ('business', 'Business'),
-    ('collectibles', 'Collectibles'),
-    ('electronics', 'Electronics'),
-    ('fashion', 'Fashion'), 
-    ('garden', 'Garden'),
-    ('home', 'Home'),
-    ('industrial', 'Industrial'), 
-    ('motors', 'Motors'),
-    ('outdoors', 'Outdoors'),
-    ('sports', 'Sports'),
-    ('toys', 'Toys'), 
-    ('none', 'None')
+    ('Art', 'Art'),
+    ('Business', 'Business'),
+    ('Collectibles', 'Collectibles'),
+    ('Electronics', 'Electronics'),
+    ('Fashion', 'Fashion'), 
+    ('Garden', 'Garden'),
+    ('Home', 'Home'),
+    ('Industrial', 'Industrial'), 
+    ('Motors', 'Motors'),
+    ('Outdoors', 'Outdoors'),
+    ('Sports', 'Sports'),
+    ('Toys', 'Toys'), 
+    ('None', 'None')
     ]
 
 # Form for creating a new listing
@@ -71,7 +71,8 @@ def closed(request):
 # View listings by Category
 def category(request, category):
     category_listings = Listing.objects.filter(category_id=category) #.filter(active=True)
-    
+    #listings = [i[1] for i in CATEGORIES]
+
     return render(request, "auctions/category.html", {
         "listings": category_listings, "category": category
     })
@@ -81,7 +82,7 @@ def category(request, category):
 def categories(request):
     categories = [] 
 
-    categories = [i for i in CATEGORIES]
+    categories = [i[1] for i in CATEGORIES]
 
     return render(request, "auctions/categories.html", {
         "categories": categories
