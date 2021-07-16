@@ -1,7 +1,7 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <div>
+    <div class="msg_bg">
         {% if message %}
             <i>{{ message }}</i>
         {% endif %}
@@ -26,7 +26,7 @@
                 <img src="{{ listing.image_url }}" alt="(No picture)" width="200" height="125"> 
             </div>
         </div>
-        {{listing.category_id}}
+
         {% endfor %}
     </ul>
 

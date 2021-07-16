@@ -1,5 +1,15 @@
 body {
     padding: 10px;
+    background-color: rgb(243, 243, 243);
+}
+
+#message_head, head {
+    background-color: rgb(243, 243, 243);
+    margin: 5px;
+}
+
+.watch_bg {
+    background-color: rgb(243, 243, 243); 
 }
 
 #h2New {
@@ -8,10 +18,12 @@ body {
 }
 
 h2 {
+    background-color: rgb(243, 243, 243);
     margin-bottom: 20px;
     margin-left: 13%;
     margin-top: 20px;
-    padding-top: 20px
+    padding-top: 20px;
+    font-weight: bold;
 }
 
 h4 {
@@ -115,12 +127,16 @@ input[type=text] {
     width: 30%;
 }
 
+form, .msg_bg {
+    background-color: rgb(243, 243, 243);
+}
+
 .bodyblock {
-    background-color: rgb(228, 228, 228);
+    background-color: rgb(243, 243, 243);
     padding-bottom: 20px;
 }
 
-div {
+div, .bid_form, .comment_form {
     background-color: white;
 }
 
@@ -128,4 +144,13 @@ div {
     display: block;
     margin: 20px;
     margin-left: 60px;
+}
+
+#commenter {
+    color: navy;
+    font-size: large;
+}
+
+.col-md-2, .col-md-8, .col-md-4 {
+    background-color: rgb(243, 243, 243);
 }

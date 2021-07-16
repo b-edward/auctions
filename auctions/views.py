@@ -30,14 +30,6 @@ class NewListingForm(ModelForm):
     class Meta:
         model = Listing
         fields = ['list_title', 'description', 'starting_bid', 'category_id', 'image_url']
-    '''
-    = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label = "Listing Title", max_length=100)
-     = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label = "Description", max_length=1000)
-     = forms.DecimalField(widget=forms.TextInput(attrs={'size':100}), label = "Starting Bid", max_digits=10, decimal_places=2)
-     = forms.CharField()
-     = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label="Image URL (optional)", max_length=300, required=False)
-    '''
-
 
 # Form for bidding on an auction
 class NewBidForm(forms.Form):
@@ -70,7 +62,7 @@ def closed(request):
 
 # View listings by Category
 def category(request, category):
-    category_listings = Listing.objects.filter(category_id=category) #.filter(active=True)
+    category_listings = Listing.objects.filter(category_id=category).filter(active=True)
     #listings = [i[1] for i in CATEGORIES]
 
     return render(request, "auctions/category.html", {

@@ -55,11 +55,11 @@ class Comment(models.Model):
     comment = models.CharField(max_length=500, help_text="Enter a comment using 500 characters or less.")
 
     def __str__(self):
-        return f"{self.comment}."    
+        return f"{self.comment}"    
 
 class Watchlist(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="watcher")     
     listing_id = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="listing_watch")
 
     def __str__(self):
-        return f"{self.user_id} is watching: {self.listing_id}."
+        return f"{self.user_id} is watching: {self.listing_id}"
