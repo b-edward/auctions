@@ -9,6 +9,8 @@
     
     <h2>Active Listings</h2>
     
+    
+
     <ul>
         {% for listing in listings %}
         <div class="container">
@@ -24,6 +26,7 @@
                 <img src="{{ listing.image_url }}" alt="(No picture)" width="200" height="125"> 
             </div>
         </div>
+        {{listing.category_id}}
         {% endfor %}
     </ul>
 

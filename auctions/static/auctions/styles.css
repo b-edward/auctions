@@ -108,3 +108,7 @@ input[type=text] {
     border-radius: 0%;
     display: block;
 } 
+
+.form-group {
+    width: 30%;
+}

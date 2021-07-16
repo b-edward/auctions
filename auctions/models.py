@@ -6,13 +6,33 @@ class User(AbstractUser):
     pass
 
 class Listing(models.Model):
+    CATEGORIES= [
+    ('art', 'Art'),
+    ('business', 'Business'),
+    ('collectibles', 'Collectibles'),
+    ('electronics', 'Electronics'),
+    ('fashion', 'Fashion'), 
+    ('garden', 'Garden'),
+    ('home', 'Home'),
+    ('industrial', 'Industrial'), 
+    ('motors', 'Motors'),
+    ('outdoors', 'Outdoors'),
+    ('sports', 'Sports'),
+    ('toys', 'Toys'), 
+    ('none', 'None')
+    ]
+
     poster_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="poster")
     list_title = models.CharField(max_length=100, help_text="Enter a title using 100 characters or less.")     
     description	= models.CharField(max_length=1000, help_text="Enter a description using 1000 characters or less.")    
     starting_bid = models.DecimalField(max_digits=10, decimal_places=2)	
     highest_bid = models.DecimalField(max_digits=10, decimal_places=2)	
     high_bidder = models.ForeignKey(User, on_delete=models.CASCADE, related_name="high_bidder")
-    category_id	= models.CharField(max_length=100)
+    category_id = models.CharField(
+        max_length=100,
+        choices=CATEGORIES,
+        default='None'
+    )
     image_url = models.CharField(max_length=300, help_text="Enter the URL of an image, using 300 characters or less.")
     active = models.BooleanField() 
     

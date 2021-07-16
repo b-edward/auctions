@@ -6,27 +6,38 @@ from django.shortcuts import render
 from django.urls import reverse
 from django import forms
 from .models import *
-from . import util
 from django.contrib.auth.decorators import login_required
+from django.forms import ModelForm
 
 CATEGORIES= [
-    ('orange', 'Oranges'),
-    ('cantaloupe', 'Cantaloupes'),
-    ('mango', 'Mangoes'),
-    ('honeydew', 'Honeydews'),
+    ('art', 'Art'),
+    ('business', 'Business'),
+    ('collectibles', 'Collectibles'),
+    ('electronics', 'Electronics'),
+    ('fashion', 'Fashion'), 
+    ('garden', 'Garden'),
+    ('home', 'Home'),
+    ('industrial', 'Industrial'), 
+    ('motors', 'Motors'),
+    ('outdoors', 'Outdoors'),
+    ('sports', 'Sports'),
+    ('toys', 'Toys'), 
+    ('none', 'None')
     ]
 
 # Form for creating a new listing
-class NewListingForm(forms.Form):
-    list_title = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label = "Listing Title", max_length=100)
-    description = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label = "Description", max_length=1000)
-    starting_bid = forms.DecimalField(widget=forms.TextInput(attrs={'size':100}), label = "Starting Bid", max_digits=10, decimal_places=2)
-    category_id = forms.MultipleChoiceField(
-        required=False,
-        widget=forms.CheckboxSelectMultiple,
-        choices=CATEGORIES,
-    )
-    image_url = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label="Image URL (optional)", max_length=300, required=False)
+class NewListingForm(ModelForm):
+    class Meta:
+        model = Listing
+        fields = ['list_title', 'description', 'starting_bid', 'category_id', 'image_url']
+    '''
+    = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label = "Listing Title", max_length=100)
+     = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label = "Description", max_length=1000)
+     = forms.DecimalField(widget=forms.TextInput(attrs={'size':100}), label = "Starting Bid", max_digits=10, decimal_places=2)
+     = forms.CharField()
+     = forms.CharField(widget=forms.TextInput(attrs={'size':100}), label="Image URL (optional)", max_length=300, required=False)
+    '''
+
 
 # Form for bidding on an auction
 class NewBidForm(forms.Form):
@@ -47,6 +58,7 @@ def index(request):
         "listings": active_listings, "bids": bids
     })
 
+
 # Closed listings page
 def closed(request):
     closed_listings = Listing.objects.filter(active=False)
@@ -55,6 +67,25 @@ def closed(request):
         "listings": closed_listings
     })
 
+
+# View listings by Category
+def category(request, category):
+    category_listings = Listing.objects.filter(category_id=category) #.filter(active=True)
+    
+    return render(request, "auctions/category.html", {
+        "listings": category_listings, "category": category
+    })
+
+
+# View categories
+def categories(request):
+    categories = [] 
+
+    categories = [i for i in CATEGORIES]
+
+    return render(request, "auctions/categories.html", {
+        "categories": categories
+    })
 
 # Login to existing account
 def login_view(request):
@@ -113,6 +144,8 @@ def register(request):
 
 # Create a new auction listing
 def create_new(request):
+    form = NewListingForm()
+
     if request.method == "POST":
         # Validate submitted listing
         new_input = NewListingForm(request.POST)
@@ -136,7 +169,7 @@ def create_new(request):
 
     else:
         return render(request, "auctions/create.html", {
-            "form": NewListingForm()
+            "form": form
         })
 
 
